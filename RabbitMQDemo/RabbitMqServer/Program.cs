@@ -7,6 +7,7 @@ namespace RabbitMqServer
         static void Main(string[] args)
         {
             Console.WriteLine("Hello World!");
+            Receive1.ReceiveMessage();
         }
     }
 }
