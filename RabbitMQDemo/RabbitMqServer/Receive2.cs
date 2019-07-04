@@ -7,9 +7,9 @@ using RabbitMQ.Client.Events;
 namespace RabbitMqServer
 {
     /// <summary>
-    /// 简单队列
+    /// 简单队列  增加返回消息确认
     /// </summary>
-    public class Receive1
+    public class Receive2
     {
         public static void ReceiveMessage()
         {
@@ -24,6 +24,8 @@ namespace RabbitMqServer
                     //声明队列
                     channel.QueueDeclare(queue: queueName, durable: false, exclusive: false, autoDelete: false, arguments: null);
 
+                    //每次只接收一条消息  未确认前之前，不在向他发送消息
+                    channel.BasicQos(0, 1, false);
                     //创建消费者对象
                     var consumer = new EventingBasicConsumer(channel);
                     consumer.Received += (model, ea) =>
@@ -31,14 +33,13 @@ namespace RabbitMqServer
                         var body = ea.Body;
                         //打印消息
                         Console.WriteLine(Encoding.UTF8.GetString(body));
-
-                        ////开启返回消息确认  
-                        ////BasicConsume autoAck=false 关闭自动应答
-                        //channel.BasicAck(ea.DeliveryTag, true);
+                        //返回消息确认
+                        channel.BasicAck(ea.DeliveryTag, true);
                     };
 
                     //消费者开启监听
-                    channel.BasicConsume(queue: queueName, autoAck: true, consumer: consumer);
+                    //将autoAck设置false 关闭自动确认
+                    channel.BasicConsume(queue: queueName, autoAck: false, consumer: consumer);
                     Console.ReadKey();
                 }
             }
